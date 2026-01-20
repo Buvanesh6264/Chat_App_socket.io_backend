@@ -42,4 +42,49 @@ const registerUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser };
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    let user = await userModel.findOne({ email });
+
+    if (!user) return res.status(400).json("invalid email");
+
+    const isValidPass = await bycrypt.compare(password, user.password);
+
+    if (!isValidPass) return res.status(400).json("invalid password");
+
+    const token = createToken(user.id);
+
+    res.status(200).json({ id: user.id, name: user.name, email, token });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json(e);
+  }
+};
+
+const findUser = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    if (!userId) return res.status(400).json("userId is required");
+
+    let user = await userModel.findById(userId);
+
+    return res.status(200).json(user);
+  } catch (e) {
+    console.log(e);
+    res.status(500).json(e);
+  }
+};
+
+const getUsers = async (req, res) => {
+  try {
+    let user = await userModel.find({});
+
+    return res.status(200).json(user);
+  } catch (e) {
+    console.log(e);
+    res.status(500).json(e);
+  }
+};
+
+module.exports = { registerUser, loginUser, findUser, getUsers };
