@@ -78,12 +78,25 @@ const findUser = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    let user = await userModel.find({});
+    const { search } = req.query;
 
-    return res.status(200).json(user);
+    let filter = {};
+
+    if (search) {
+      filter = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } }
+        ]
+      };
+    }
+
+    const users = await userModel.find(filter);
+
+    return res.status(200).json(users);
   } catch (e) {
-    console.log(e);
-    res.status(500).json(e);
+    console.error(e);
+    return res.status(500).json(e);
   }
 };
 
